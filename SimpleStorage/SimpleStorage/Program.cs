@@ -17,9 +17,10 @@ namespace SimpleStorage
             {
                 var container = IoCFactory.GetContainer();
 
-                container.Configure(c => c.For<ITopology>().Use(new Topology(options.ReplicasPorts)).Singleton());
+                var topology = new Topology(options.ReplicasPorts);
+                container.Configure(c => c.For<ITopology>().Use(topology).Singleton());
 
-                var configuration = new Configuration
+                var configuration = new Configuration(topology)
                 {
                     CurrentNodePort = options.Port,
                     OtherShardsPorts = options.ShardsPorts

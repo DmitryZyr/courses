@@ -19,8 +19,11 @@ namespace SimpleStorage
 
                 container.Configure(c => c.For<ITopology>().Use(new Topology(options.ReplicasPorts)).Singleton());
 
-                var currentNodeShardNumber = options.Port%(options.ShardsPorts.Length + 1);
-                var configuration = new Configuration {ShardNumber = currentNodeShardNumber};
+                var configuration = new Configuration
+                {
+                    CurrentNodePort = options.Port,
+                    OtherShardsPorts = options.ShardsPorts
+                };
                 container.Configure(c => c.For<IConfiguration>().Use(configuration));
 
                 using (WebApp.Start<Startup>(string.Format("http://+:{0}/", options.Port)))
@@ -31,7 +34,7 @@ namespace SimpleStorage
                         Console.WriteLine("Replicas running on ports {0}", string.Join(", ", options.ReplicasPorts));
 
                     if (options.ShardsPorts.Any())
-                        Console.WriteLine("Shards running on ports {0}", string.Join(", ", options.ReplicasPorts));
+                        Console.WriteLine("Shards running on ports {0}", string.Join(", ", options.ShardsPorts));
 
                     Console.ReadLine();
                 }

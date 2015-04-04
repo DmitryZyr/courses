@@ -21,7 +21,8 @@ namespace SimpleStorage.Tests.Controllers
         {
             storage = new Storage(new OperationLog(), new ValueComparer());
             stateRepository = new StateRepository();
-            sut = new ValuesController(storage, stateRepository, new Configuration());
+            var configuration = new Configuration {CurrentNodePort = 15000, OtherShardsPorts = new int[0]};
+            sut = new ValuesController(storage, stateRepository, configuration);
         }
 
         [Test]

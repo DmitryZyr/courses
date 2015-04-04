@@ -17,6 +17,9 @@ namespace SimpleStorage.Tests.Controllers
         {
             base.SetUp();
 
+            var configuration = new Configuration {CurrentNodePort = port, OtherShardsPorts = new int[0]};
+            container.Configure(c => c.For<IConfiguration>().Use(configuration));
+
             storageClient = new SimpleStorageClient(endpoint);
             operationLogClient = new OperationLogClient(endpoint);
         }

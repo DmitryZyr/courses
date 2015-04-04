@@ -2,6 +2,7 @@
 {
     public interface IConfiguration
     {
-        int ShardNumber { get; }
+        int CurrentNodePort { get; }
+        int[] OtherShardsPorts { get; }
     }
 }

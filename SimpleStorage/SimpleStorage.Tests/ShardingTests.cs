@@ -66,7 +66,7 @@ namespace SimpleStorage.Tests
 
         private IEnumerable<ValueWithId> GetAll(string endpoint)
         {
-            var requestUri = endpoint + "api/values/";
+            var requestUri = endpoint + "api/admin/getAllLocalData";
             using (var httpClient = new HttpClient())
             using (var response = httpClient.GetAsync(requestUri).Result)
             {

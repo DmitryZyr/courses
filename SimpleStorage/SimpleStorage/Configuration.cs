@@ -2,6 +2,7 @@
 {
     public class Configuration : IConfiguration
     {
-        public int ShardNumber { get; set; }
+        public int CurrentNodePort { get; set; }
+        public int[] OtherShardsPorts { get; set; }
     }
 }

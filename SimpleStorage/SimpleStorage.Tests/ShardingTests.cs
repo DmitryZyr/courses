@@ -14,16 +14,13 @@ namespace SimpleStorage.Tests
         private static readonly string endpoint1 = string.Format("http://127.0.0.1:{0}/", 16000);
         private static readonly string endpoint2 = string.Format("http://127.0.0.1:{0}/", 16001);
         private static readonly string endpoint3 = string.Format("http://127.0.0.1:{0}/", 16002);
-        private readonly string[] endpoints = {endpoint1, endpoint2, endpoint3};
-        private SimpleStorageClient client;
 
         public override void SetUp()
         {
             base.SetUp();
-            client = new SimpleStorageClient(endpoints);
 
             using (var httpClient = new HttpClient())
-                foreach (var endpoint in endpoints)
+                foreach (var endpoint in new[] {endpoint1, endpoint2, endpoint3})
                 {
                     using (var response =
                         httpClient.PostAsync(endpoint + "api/admin/removeAllData", new ByteArrayContent(new byte[0]))
@@ -33,19 +30,9 @@ namespace SimpleStorage.Tests
         }
 
         [Test]
-        public void Sharding_EachShard_ShouldNotContainAllData()
-        {
-            for (var i = 0; i < 100; i++)
-                client.Put(Guid.NewGuid().ToString(), new Value {Content = "content"});
-
-            Assert.That(GetAll(endpoint1).ToArray(), Has.Length.LessThan(100));
-            Assert.That(GetAll(endpoint2).ToArray(), Has.Length.LessThan(100));
-            Assert.That(GetAll(endpoint3).ToArray(), Has.Length.LessThan(100));
-        }
-
-        [Test]
         public void Sharding_AllShards_ShouldContainSomeData()
         {
+            var client = new SimpleStorageClient(endpoint1);
             for (var i = 0; i < 100; i++)
                 client.Put(Guid.NewGuid().ToString(), new Value {Content = "content"});
 
@@ -55,8 +42,9 @@ namespace SimpleStorage.Tests
         }
 
         [Test]
-        public void Sharding_Always_ShouldSaveAllData()
+        public void Sharding_Always_ShouldReadAllData()
         {
+            var client = new SimpleStorageClient(endpoint1);
             var items = new List<KeyValuePair<string, Value>>();
             for (var i = 0; i < 100; i++)
             {
@@ -67,12 +55,13 @@ namespace SimpleStorage.Tests
             }
 
             foreach (var item in items)
-            {
-                var actual = client.Get(item.Key);
-                Assert.That(actual.Content, Is.EqualTo(item.Value.Content));
-                Assert.That(actual.IsDeleted, Is.EqualTo(item.Value.IsDeleted));
-                Assert.That(actual.Revision, Is.EqualTo(item.Value.Revision));
-            }
+                foreach (var endpoint in new[] {endpoint1, endpoint2, endpoint3})
+                {
+                    var actual = new SimpleStorageClient(endpoint).Get(item.Key);
+                    Assert.That(actual.Content, Is.EqualTo(item.Value.Content));
+                    Assert.That(actual.IsDeleted, Is.EqualTo(item.Value.IsDeleted));
+                    Assert.That(actual.Revision, Is.EqualTo(item.Value.Revision));
+                }
         }
 
         private IEnumerable<ValueWithId> GetAll(string endpoint)
